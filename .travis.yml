@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+  - "8"
+  - "10"
+addons:
+  postgresql: 10
+services:
+  - postgresql
+before_script:
+  - psql -U postgres -c 'create database "orm-query-builder";'
+  - npm run migrate
+after_success:
+  - npm run test:coveralls

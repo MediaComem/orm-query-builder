@@ -6,10 +6,10 @@ const { createPerson, Person } = require('./fixtures/people');
 
 setUp();
 
-describe('sorting helper', () => {
+describe('modifiers', () => {
   beforeEach(cleanUp);
 
-  it('should sort', async () => {
+  it('should modify the query', async () => {
 
     const people = await Promise.all([
       createPerson({ first_name: 'John', last_name: 'Doe' }),
@@ -19,7 +19,7 @@ describe('sorting helper', () => {
 
     const req = { query: {} };
     const result = await new OrmQueryBuilder({ baseQuery: Person })
-      .modifiers(before('query'), sorting('lastName', 'firstName').default('lastName-desc', 'firstName-desc'))
+      .modifiers(before('query'), context => context.wrap(context.query.query(qb => qb.orderBy('last_name', 'desc').orderBy('first_name', 'desc'))))
       .execute({ req });
 
     expect(result).to.be.an.instanceof(bookshelf.Collection);

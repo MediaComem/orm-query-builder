@@ -3,8 +3,12 @@ const testValueGenerator = require('test-value-generator');
 
 const { bookshelf } = require('./db');
 
-exports.Person = bookshelf.Model.extend({
-  tableName: 'people'
+exports.Person = bookshelf.model('Person', {
+  tableName: 'people',
+
+  books: function() {
+    return this.belongsToMany('Book');
+  }
 });
 
 exports.createPerson = (properties = {}) => {

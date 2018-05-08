@@ -9,9 +9,10 @@
   "scripts": {
     "doctoc": "doctoc --notitle --github README.md",
     "migrate": "cross-env NODE_ENV=test knex migrate:rollback && cross-env NODE_ENV=test knex migrate:latest",
-    "test": "cross-env NODE_ENV=test nyc --reporter=html --reporter=text mocha spec/**/*.spec.js",
+    "test": "cross-env NODE_ENV=test nyc --reporter=html --reporter=text mocha spec/*.spec.js spec/**/*.spec.js",
     "test:coveralls": "nyc report --reporter=text-lcov | coveralls",
-    "test:debug": "cross-env DEBUG=orm-query-builder npm test"
+    "test:debug": "cross-env DEBUG=orm-query-builder npm test",
+    "test:watch": "onchange \"index.js\" \"lib/**/*.js\" \"spec/**/*.js\" -- npm test"
   },
   "keywords": [
     "orm",
@@ -36,6 +37,7 @@
     "knex": "^0.14.6",
     "mocha": "^5.1.1",
     "nyc": "^11.7.1",
+    "onchange": "^4.0.0",
     "pg": "^7.4.2",
     "sinon": "^5.0.5",
     "test-value-generator": "^1.0.1"

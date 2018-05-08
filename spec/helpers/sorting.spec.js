@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 
-const { before, OrmQueryBuilder, sorting, wrap } = require('../../');
+const { before, OrmQueryBuilder, sorting } = require('../../');
 const { bookshelf, cleanUp, db, setUp } = require('../fixtures/db');
 const { createPerson, Person } = require('../fixtures/people');
 
@@ -19,7 +19,7 @@ describe('sorting helper', () => {
     ]);
 
     builder = await new OrmQueryBuilder({ baseQuery: Person })
-      .modifiers(before('query'), sorting().sorts('lastName', 'firstName').default('lastName-desc', 'firstName-desc'));
+      .before('end', sorting().sorts('lastName', 'firstName').default('lastName-desc', 'firstName-desc'));
   });
 
   function expectResult(result, ...personIndices) {

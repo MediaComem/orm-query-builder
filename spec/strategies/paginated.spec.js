@@ -20,14 +20,14 @@ describe('paginated strategy', () => {
 
     const req = { query: { offset: 0, limit: 2 } };
     const baseQuery = new Person().query(qb => qb.orderBy('last_name', 'desc').orderBy('first_name', 'desc'));
-    const result = await new OrmQueryBuilder({ baseQuery, strategy: 'paginated' })
-      .serializers(context => {
-        expect(context.pagination.total).to.equal(3);
-        expect(context.pagination.filteredTotal).to.equal(3);
-        return context.result;
-      })
-      .execute({ req });
+    const context = await new OrmQueryBuilder({ baseQuery, strategy: 'paginated' })
+      .execute({ req, result: 'context' });
 
+    expect(context).to.be.an('object');
+    expect(context.pagination.total).to.equal(3);
+    expect(context.pagination.filteredTotal).to.equal(3);
+
+    const result = context.result;
     expect(result).to.be.an.instanceof(bookshelf.Collection);
     expect(result).to.have.lengthOf(2);
 

@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const { spy } = require('sinon');
 
-const { eagerLoading, OrmQueryBuilder } = require('../../');
+const { joining, OrmQueryBuilder } = require('../../');
 const { bookshelf, cleanUp, db, setUp } = require('../fixtures/db');
 const { Book, createBook } = require('../fixtures/books');
 const { createPerson, Person } = require('../fixtures/people');
@@ -9,10 +9,10 @@ const { createTheme, Theme } = require('../fixtures/themes');
 
 setUp();
 
-describe('eager loading helper', () => {
+describe('joining helper', () => {
   beforeEach(cleanUp);
 
-  it('should eager load relations', async () => {
+  it('should join tables', async () => {
 
     const people = await Promise.all([
       createPerson({ first_name: 'John', last_name: 'Doe' }),
@@ -32,26 +32,12 @@ describe('eager loading helper', () => {
 
     const baseQuery = new Person().orderBy('last_name').orderBy('first_name');
     const result = await new OrmQueryBuilder({ baseQuery })
-      .after('end', eagerLoading().load('books.theme'))
+      .use(
+        joining('people')
+          .join('books_people')
+          .join('books', { joinKey: 'books_people.book_id', requiredJoin: 'books_people' })
+      )
+      .after('start', context => context.requireJoin('books'))
       .execute();
-
-    expect(result).to.be.an.instanceof(bookshelf.Collection);
-    expect(result).to.have.lengthOf(3);
-    expect(result.pluck('id')).to.eql([ 1, 0, 2 ].map(i => people[i].get('id')));
-
-    const booksByJane = result.models[0].related('books');
-    expect(booksByJane.pluck('title').sort()).to.eql([ 'Eager Loading', 'Filtering' ]);
-    expect(booksByJane).to.have.lengthOf(2);
-
-    const booksByJohn = result.models[1].related('books');
-    expect(booksByJohn.pluck('title').sort()).to.eql([ 'Eager Loading' ]);
-    expect(booksByJohn).to.have.lengthOf(1);
-
-    const booksByBob = result.models[2].related('books');
-    expect(booksByBob).to.have.lengthOf(0);
-
-    for (let book of [ ...booksByJane.models, ...booksByJohn.models, ...booksByBob.models ]) {
-      expect(book.related('theme').toJSON()).to.eql(theme.toJSON());
-    }
   });
 });

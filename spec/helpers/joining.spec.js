@@ -53,6 +53,25 @@ describe('joining helper', () => {
     expect(result.pluck('first_name').sort()).to.eql([ 'Jane', 'John' ]);
   });
 
+  it('should correctly order required joins', async () => {
+
+    const baseQuery = new Person().orderBy('last_name').orderBy('first_name');
+    const result = await new OrmQueryBuilder({ baseQuery })
+      .use(
+        joining('people')
+          .join('books_people')
+          .join('books', { column: 'books_people.book_id', joinColumn: 'books.id', requiredJoin: 'books_people' })
+          .join('themes', { column: 'books.theme_id', joinColumn: 'themes.id', requiredJoin: 'books' })
+      )
+      .after('start', context => context.requireJoin('themes', 'books'))
+      .before('end', context => context.query.query(qb => qb.where('themes.name', 'Query Building')))
+      .execute();
+
+    expect(result).to.be.an.instanceof(bookshelf.Collection);
+    expect(result).to.have.lengthOf(1);
+    expect(result.pluck('first_name').sort()).to.eql([ 'Jane' ]);
+  });
+
   it('should join tables based on a many-to-one relationship', async () => {
 
     const result = await new OrmQueryBuilder({ baseQuery: Book })

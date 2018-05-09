@@ -32,7 +32,7 @@ describe('eager loading helper', () => {
 
     const baseQuery = new Person().orderBy('last_name').orderBy('first_name');
     const result = await new OrmQueryBuilder({ baseQuery })
-      .after('end', eagerLoading().load('books.theme'))
+      .use(eagerLoading().load('books.theme'))
       .execute();
 
     expect(result).to.be.an.instanceof(bookshelf.Collection);

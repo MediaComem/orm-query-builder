@@ -8,6 +8,10 @@ exports.Person = bookshelf.model('Person', {
 
   books: function() {
     return this.belongsToMany('Book');
+  },
+
+  themes: function() {
+    return this.hasMany('Theme').through('Book');
   }
 });
 

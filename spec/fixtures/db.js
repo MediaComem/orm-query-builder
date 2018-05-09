@@ -14,6 +14,8 @@ bookshelf.plugin('registry');
 
 async function cleanUp() {
 
+  await db.delete().from('books_people');
+
   await Promise.all([
     db.delete().from('books'),
     db.delete().from('people')

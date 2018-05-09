@@ -19,7 +19,7 @@ describe('sorting helper', () => {
     ]);
 
     builder = await new OrmQueryBuilder({ baseQuery: Person })
-      .before('end', sorting().sorts('lastName', 'firstName').default('lastName-desc', 'firstName-desc'));
+      .use(sorting().sorts('lastName', 'firstName').default('lastName-desc', 'firstName-desc'));
   });
 
   function expectResult(result, ...personIndices) {

@@ -11,7 +11,7 @@ setUp();
 describe('bookshelf adapter', () => {
 
   const createConfig = options => new OrmQueryConfig(options);
-  const createModel = (options = {}) => bookshelf.Model.extend(options);
+  const createModel = options => bookshelf.Model.extend(options);
 
   describe('applyJoinDefinition', () => {
 

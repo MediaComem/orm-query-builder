@@ -1,9 +1,10 @@
-const { after, before, OrmQueryBuilder } = require('./lib/builder');
+const OrmQueryBuilder = require('./lib/builder');
+const OrmQueryConfig = require('./lib/config');
 const helpers = require('./lib/helpers');
 const OrmQueryWrapper = require('./lib/wrapper');
 
 module.exports = {
-  after, before, OrmQueryBuilder, OrmQueryWrapper,
-  wrap: OrmQueryWrapper.wrap,
+  OrmQueryBuilder, OrmQueryConfig, OrmQueryWrapper,
+  wrap: OrmQueryWrapper.wrap, unwrap: OrmQueryWrapper.unwrap,
   ...helpers
 };

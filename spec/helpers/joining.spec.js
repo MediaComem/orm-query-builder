@@ -2,10 +2,8 @@ const { expect } = require('chai');
 const { spy } = require('sinon');
 
 const { joining, OrmQueryBuilder } = require('../../');
-const { bookshelf, cleanUp, db, setUp } = require('../fixtures/db');
-const { Book, createBook } = require('../fixtures/books');
-const { createPerson, Person } = require('../fixtures/people');
-const { createTheme, Theme } = require('../fixtures/themes');
+const { bookshelf, cleanUp, db, setUp } = require('../utils/db');
+const { Book, create, Person, Theme } = require('../utils/fixtures');
 
 setUp();
 
@@ -15,21 +13,21 @@ describe('joining helper', () => {
   beforeEach(async () => {
     await cleanUp();
 
-    people = await Promise.all([
-      createPerson({ first_name: 'John', last_name: 'Doe' }),
-      createPerson({ first_name: 'Jane', last_name: 'Doe' }),
-      createPerson({ first_name: 'Bob', last_name: 'Smith' })
-    ]);
+    people = await create(Person,
+      { first_name: 'John', last_name: 'Doe' },
+      { first_name: 'Jane', last_name: 'Doe' },
+      { first_name: 'Bob', last_name: 'Smith' }
+    );
 
-    themes = await Promise.all([
-      createTheme({ name: 'Databases' }),
-      createTheme({ name: 'Query Building' })
-    ]);
+    themes = await create(Theme,
+      { name: 'Databases' },
+      { name: 'Query Building' }
+    );
 
-    books = await Promise.all([
-      createBook({ title: 'Eager Loading', theme: themes[0] }),
-      createBook({ title: 'Filtering', theme: themes[1] })
-    ]);
+    books = await create(Book,
+      { title: 'Eager Loading', theme_id: themes[0].get('id') },
+      { title: 'Filtering', theme_id: themes[1].get('id') }
+    );
 
     await people[0].books().attach(books.slice(0, 1));
     await people[1].books().attach(books.slice());
@@ -41,11 +39,11 @@ describe('joining helper', () => {
     const result = await new OrmQueryBuilder({ baseQuery })
       .use(
         joining('people')
-          .join('books_people')
+          .join('books_people', { column: 'people.id', joinColumn: 'books_people.person_id' })
           .join('books', { column: 'books_people.book_id', joinColumn: 'books.id', requiredJoin: 'books_people' })
       )
       .after('start', context => context.requireJoin('books'))
-      .before('end', context => context.query.query(qb => qb.where('books.title', 'Eager Loading')))
+      .before('end', context => context.set('query', context.get('query').query(qb => qb.where('books.title', 'Eager Loading'))))
       .execute();
 
     expect(result).to.be.an.instanceof(bookshelf.Collection);
@@ -59,12 +57,12 @@ describe('joining helper', () => {
     const result = await new OrmQueryBuilder({ baseQuery })
       .use(
         joining('people')
-          .join('books_people')
+          .join('books_people', { column: 'people.id', joinColumn: 'books_people.person_id' })
           .join('books', { column: 'books_people.book_id', joinColumn: 'books.id', requiredJoin: 'books_people' })
           .join('themes', { column: 'books.theme_id', joinColumn: 'themes.id', requiredJoin: 'books' })
       )
       .after('start', context => context.requireJoin('themes', 'books'))
-      .before('end', context => context.query.query(qb => qb.where('themes.name', 'Query Building')))
+      .before('end', context => context.set('query', context.get('query').query(qb => qb.where('themes.name', 'Query Building'))))
       .execute();
 
     expect(result).to.be.an.instanceof(bookshelf.Collection);
@@ -77,7 +75,7 @@ describe('joining helper', () => {
     const result = await new OrmQueryBuilder({ baseQuery: Book })
       .use(joining(Book).relations('theme'))
       .after('start', context => context.requireJoin('themes'))
-      .before('end', context => context.query.query(qb => qb.where('themes.name', 'Databases')))
+      .before('end', context => context.set('query', context.get('query').query(qb => qb.where('themes.name', 'Databases'))))
       .execute();
 
     expect(result).to.be.an.instanceof(bookshelf.Collection);
@@ -91,7 +89,7 @@ describe('joining helper', () => {
     const result = await new OrmQueryBuilder({ baseQuery })
       .use(joining(Person).relations('books'))
       .after('start', context => context.requireJoin('books'))
-      .before('end', context => context.query.query(qb => qb.where('books.title', 'Eager Loading')))
+      .before('end', context => context.set('query', context.get('query').query(qb => qb.where('books.title', 'Eager Loading'))))
       .execute();
 
     expect(result).to.be.an.instanceof(bookshelf.Collection);
@@ -104,7 +102,7 @@ describe('joining helper', () => {
     const result = await new OrmQueryBuilder({ baseQuery: Theme })
       .use(joining(Theme).relations('books'))
       .after('start', context => context.requireJoin('books'))
-      .before('end', context => context.query.query(qb => qb.where('books.title', 'Filtering')))
+      .before('end', context => context.set('query', context.get('query').query(qb => qb.where('books.title', 'Filtering'))))
       .execute();
 
     expect(result).to.be.an.instanceof(bookshelf.Collection);

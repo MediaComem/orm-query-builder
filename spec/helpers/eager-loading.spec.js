@@ -2,10 +2,8 @@ const { expect } = require('chai');
 const { spy } = require('sinon');
 
 const { eagerLoading, OrmQueryBuilder } = require('../../');
-const { bookshelf, cleanUp, db, setUp } = require('../fixtures/db');
-const { Book, createBook } = require('../fixtures/books');
-const { createPerson, Person } = require('../fixtures/people');
-const { createTheme, Theme } = require('../fixtures/themes');
+const { bookshelf, cleanUp, db, setUp } = require('../utils/db');
+const { Book, create, Person, Theme } = require('../utils/fixtures');
 
 setUp();
 
@@ -14,18 +12,18 @@ describe('eager loading helper', () => {
 
   it('should eager load relations', async () => {
 
-    const people = await Promise.all([
-      createPerson({ first_name: 'John', last_name: 'Doe' }),
-      createPerson({ first_name: 'Jane', last_name: 'Doe' }),
-      createPerson({ first_name: 'Bob', last_name: 'Smith' })
-    ]);
+    const people = await create(Person,
+      { first_name: 'John', last_name: 'Doe' },
+      { first_name: 'Jane', last_name: 'Doe' },
+      { first_name: 'Bob', last_name: 'Smith' }
+    );
 
-    const theme = await createTheme({ name: 'Query Building' });
+    const [ theme ] = await create(Theme, { name: 'Query Building' });
 
-    const books = await Promise.all([
-      createBook({ title: 'Eager Loading', theme }),
-      createBook({ title: 'Filtering', theme })
-    ]);
+    const books = await create(Book,
+      { title: 'Eager Loading', theme_id: theme.get('id') },
+      { title: 'Filtering', theme_id: theme.get('id') }
+    );
 
     people[0].books().attach(books.slice(0, 1));
     people[1].books().attach(books.slice());

@@ -1,8 +1,8 @@
 const { expect } = require('chai');
 
 const { before, OrmQueryBuilder, sorting } = require('../../');
-const { bookshelf, cleanUp, db, setUp } = require('../fixtures/db');
-const { createPerson, Person } = require('../fixtures/people');
+const { bookshelf, cleanUp, db, setUp } = require('../utils/db');
+const { create, Person } = require('../utils/fixtures');
 
 setUp();
 
@@ -12,11 +12,11 @@ describe('sorting helper', () => {
   beforeEach(async () => {
     await cleanUp();
 
-    people = await Promise.all([
-      createPerson({ first_name: 'John', last_name: 'Doe' }),
-      createPerson({ first_name: 'Jane', last_name: 'Doe' }),
-      createPerson({ first_name: 'Bob', last_name: 'Smith' })
-    ]);
+    people = await create(Person,
+      { first_name: 'John', last_name: 'Doe' },
+      { first_name: 'Jane', last_name: 'Doe' },
+      { first_name: 'Bob', last_name: 'Smith' }
+    );
 
     builder = await new OrmQueryBuilder({ baseQuery: Person })
       .use(sorting().sorts('lastName', 'firstName').default('lastName-desc', 'firstName-desc'));

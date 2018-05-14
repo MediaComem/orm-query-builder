@@ -3,5 +3,8 @@
     "babel-register"
   ],
   "sourceMap": false,
-  "instrument": false
+  "instrument": false,
+  "exclude": [
+    "spec/utils/**/*.js"
+  ]
 }

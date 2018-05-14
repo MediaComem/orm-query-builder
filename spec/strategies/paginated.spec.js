@@ -18,10 +18,9 @@ describe('paginated strategy', () => {
       { first_name: 'Bob', last_name: 'Smith' }
     );
 
-    const req = { query: { offset: 0, limit: 2 } };
     const baseQuery = new Person().query(qb => qb.orderBy('last_name', 'desc').orderBy('first_name', 'desc'));
     const context = await new OrmQueryBuilder({ baseQuery, strategy: 'paginated' })
-      .execute({ req, result: 'context' });
+      .execute({ offset: 0, limit: 2, result: 'context' });
 
     expect(context).to.be.an('object');
     expect(context.get('pagination')).to.eql({
@@ -48,11 +47,10 @@ describe('paginated strategy', () => {
       { first_name: 'Bob', last_name: 'Smith' }
     );
 
-    const req = { query: { offset: 1, limit: 1 } };
     const baseQuery = new Person().query(qb => qb.orderBy('last_name', 'desc').orderBy('first_name', 'desc'));
     const context = await new OrmQueryBuilder({ baseQuery, strategy: 'paginated' })
       .before('paginate', context => context.set('query', context.get('query').query(qb => qb.where('last_name', 'Doe'))))
-      .execute({ req, result: 'context' });
+      .execute({ offset: 1, limit: 1, result: 'context' });
 
     expect(context).to.be.an('object');
     expect(context.get('pagination')).to.eql({
@@ -78,10 +76,9 @@ describe('paginated strategy', () => {
       { first_name: 'Bob', last_name: 'Smith' }
     );
 
-    const req = { query: {} };
     const baseQuery = new Person().query(qb => qb.orderBy('last_name', 'desc').orderBy('first_name', 'desc'));
     const context = await new OrmQueryBuilder({ baseQuery, strategy: 'paginated' })
-      .execute({ req, result: 'context' });
+      .execute({ result: 'context' });
 
     expect(context).to.be.an('object');
     expect(context.get('pagination')).to.eql({
@@ -95,5 +92,50 @@ describe('paginated strategy', () => {
     expect(result).to.be.an.instanceof(bookshelf.Collection);
     expect(result).to.have.lengthOf(3);
     expect(result.toJSON()).to.eql([ 2, 0, 1 ].map(i => people[i].toJSON()));
+  });
+
+  it('should paginate with custom options', async () => {
+
+    const people = await create(Person,
+      { first_name: 'John', last_name: 'Doe' },
+      { first_name: 'Jane', last_name: 'Doe' },
+      { first_name: 'Bob', last_name: 'Smith' }
+    );
+
+    const req = { query: { offset: 1, limit: 1 } };
+    const baseQuery = new Person().query(qb => qb.orderBy('last_name', 'desc').orderBy('first_name', 'desc'));
+
+    const context = await new OrmQueryBuilder({
+      baseQuery,
+      strategy: 'paginated',
+      strategyOptions: {
+        getOffset: context => context.options.req.query.offset,
+        getLimit: 'options.req.query.limit'
+      }
+    }).execute({ req, result: 'context' });
+
+    expect(context).to.be.an('object');
+    expect(context.get('pagination')).to.eql({
+      filteredTotal: 3,
+      limit: 1,
+      offset: 1,
+      total: 3
+    });
+
+    const result = context.get('result');
+    expect(result).to.be.an.instanceof(bookshelf.Collection);
+    expect(result).to.have.lengthOf(1);
+
+    const json = result.toJSON();
+    expect(json).to.deep.include(people[0].toJSON());
+  });
+
+  it('should not accept an unsupported option getter type', () => {
+    expect(() => new OrmQueryBuilder({
+      strategy: 'paginated',
+      strategyOptions: {
+        getOffset: 42
+      }
+    })).to.throw('Unsupported option getter type number');
   });
 });

@@ -96,7 +96,7 @@ describe('builder', () => {
 
     it('should not accept plugins without a use function', () => {
       const builder = createBuilder();
-      const invalidPlugin = function() {};
+      const invalidPlugin = {};
       expect(() => builder.use(invalidPlugin)).to.throw('Plugin must have a "use" function');
     });
   });

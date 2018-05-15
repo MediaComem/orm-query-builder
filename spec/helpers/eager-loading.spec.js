@@ -8,7 +8,7 @@ const { Book, create, Person, Theme } = require('../utils/fixtures');
 
 setUp();
 
-describe('eager loading helper', () => {
+describe('eager loading plugin', () => {
   beforeEach(cleanUp);
 
   it('should eager load relations', async () => {

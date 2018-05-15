@@ -12,8 +12,8 @@ describe('sorting plugin', () => {
   describe('sort', () => {
     it('should not allow defining the same sort twice', () => {
       const plugin = sorting();
-      plugin.sort('foo', () => {});
-      expect(() => plugin.sort('foo', () => {})).to.throw('Sort "foo" is already defined');
+      plugin.sort('foo', noop);
+      expect(() => plugin.sort('foo', noop)).to.throw('Sort "foo" is already defined');
     });
   });
 

@@ -13,8 +13,4 @@ describe('builder', () => {
   it('should not accept an unknown adapter name', () => {
     expect(() => createConfig({ adapter: 'foo' })).to.throw('Unknown adapter "foo"');
   });
-
-  it('should not accept an unknown strategy name', () => {
-    expect(() => createConfig({ strategy: 'foo' })).to.throw('Unknown strategy "foo"');
-  });
 });

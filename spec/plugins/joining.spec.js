@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const { spy, stub } = require('sinon');
 
 const { joining, OrmQueryBuilder } = require('../../');
-const { OrmQueryJoinDefinition } = require('../../lib/helpers/joining');
+const { OrmQueryJoinDefinition } = require('../../lib/plugins/joining');
 const { bookshelf, cleanUp, db, setUp } = require('../utils/db');
 const { Book, create, Person, Theme } = require('../utils/fixtures');
 

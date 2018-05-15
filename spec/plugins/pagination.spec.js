@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const { spy } = require('sinon');
 
-const { OrmQueryBuilder } = require('../../');
+const { OrmQueryBuilder, pagination } = require('../../');
 const { bookshelf, cleanUp, db, setUp } = require('../utils/db');
 const { create, Person } = require('../utils/fixtures');
 
@@ -19,7 +19,8 @@ describe('paginated strategy', () => {
     );
 
     const baseQuery = new Person().query(qb => qb.orderBy('last_name', 'desc').orderBy('first_name', 'desc'));
-    const context = await new OrmQueryBuilder({ baseQuery, strategy: 'paginated' })
+    const context = await new OrmQueryBuilder({ baseQuery })
+      .use(pagination())
       .execute({ offset: 0, limit: 2, result: 'context' });
 
     expect(context).to.be.an('object');
@@ -48,7 +49,8 @@ describe('paginated strategy', () => {
     );
 
     const baseQuery = new Person().query(qb => qb.orderBy('last_name', 'desc').orderBy('first_name', 'desc'));
-    const context = await new OrmQueryBuilder({ baseQuery, strategy: 'paginated' })
+    const context = await new OrmQueryBuilder({ baseQuery })
+      .use(pagination())
       .before('paginate', context => context.set('query', context.get('query').query(qb => qb.where('last_name', 'Doe'))))
       .execute({ offset: 1, limit: 1, result: 'context' });
 
@@ -77,7 +79,8 @@ describe('paginated strategy', () => {
     );
 
     const baseQuery = new Person().query(qb => qb.orderBy('last_name', 'desc').orderBy('first_name', 'desc'));
-    const context = await new OrmQueryBuilder({ baseQuery, strategy: 'paginated' })
+    const context = await new OrmQueryBuilder({ baseQuery })
+      .use(pagination())
       .execute({ result: 'context' });
 
     expect(context).to.be.an('object');
@@ -105,14 +108,12 @@ describe('paginated strategy', () => {
     const req = { query: { offset: 1, limit: 1 } };
     const baseQuery = new Person().query(qb => qb.orderBy('last_name', 'desc').orderBy('first_name', 'desc'));
 
-    const context = await new OrmQueryBuilder({
-      baseQuery,
-      strategy: 'paginated',
-      strategyOptions: {
+    const context = await new OrmQueryBuilder({ baseQuery })
+      .use(pagination({
         getOffset: context => context.options.req.query.offset,
         getLimit: 'options.req.query.limit'
-      }
-    }).execute({ req, result: 'context' });
+      }))
+      .execute({ req, result: 'context' });
 
     expect(context).to.be.an('object');
     expect(context.get('pagination')).to.eql({
@@ -131,11 +132,6 @@ describe('paginated strategy', () => {
   });
 
   it('should not accept an unsupported option getter type', () => {
-    expect(() => new OrmQueryBuilder({
-      strategy: 'paginated',
-      strategyOptions: {
-        getOffset: 42
-      }
-    })).to.throw('Unsupported option getter type number');
+    expect(() => pagination({ getOffset: 42 })).to.throw('Unsupported option getter type number');
   });
 });

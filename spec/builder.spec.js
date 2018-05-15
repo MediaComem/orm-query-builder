@@ -42,6 +42,26 @@ describe('builder', () => {
       expect(config.addMiddlewareGroup).to.have.callCount(2);
     });
 
+    it('should add middlewares on a stage', () => {
+
+      const config = new OrmQueryConfig();
+      stub(config, 'addMiddlewareGroup');
+      const builder = createBuilder(config);
+
+      const groups = [
+        [ noop, noop, noop ],
+        [ noop, noop ]
+      ];
+
+      builder.on('foo', ...groups[0]);
+      expect(config.addMiddlewareGroup).to.have.been.calledWith('on', 'foo', groups[0]);
+      expect(config.addMiddlewareGroup).to.have.callCount(1);
+
+      builder.on('bar', ...groups[1]);
+      expect(config.addMiddlewareGroup).to.have.been.calledWith('on', 'bar', groups[1]);
+      expect(config.addMiddlewareGroup).to.have.callCount(2);
+    });
+
     it('should add middlewares after a stage', () => {
 
       const config = new OrmQueryConfig();
@@ -58,26 +78,6 @@ describe('builder', () => {
       expect(config.addMiddlewareGroup).to.have.callCount(1);
 
       builder.after('bar', ...groups[1]);
-      expect(config.addMiddlewareGroup).to.have.been.calledWith('after', 'bar', groups[1]);
-      expect(config.addMiddlewareGroup).to.have.callCount(2);
-    });
-
-    it('should add middlewares after a stage with "on"', () => {
-
-      const config = new OrmQueryConfig();
-      stub(config, 'addMiddlewareGroup');
-      const builder = createBuilder(config);
-
-      const groups = [
-        [ noop, noop, noop ],
-        [ noop, noop ]
-      ];
-
-      builder.on('foo', ...groups[0]);
-      expect(config.addMiddlewareGroup).to.have.been.calledWith('after', 'foo', groups[0]);
-      expect(config.addMiddlewareGroup).to.have.callCount(1);
-
-      builder.on('bar', ...groups[1]);
       expect(config.addMiddlewareGroup).to.have.been.calledWith('after', 'bar', groups[1]);
       expect(config.addMiddlewareGroup).to.have.callCount(2);
     });

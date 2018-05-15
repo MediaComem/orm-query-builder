@@ -7,7 +7,7 @@ const { create, Person } = require('../utils/fixtures');
 
 setUp();
 
-describe('paginated strategy', () => {
+describe('pagination plugin', () => {
   beforeEach(cleanUp);
 
   it('should paginate', async () => {

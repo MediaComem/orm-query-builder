@@ -6,7 +6,7 @@ const { setUp } = require('./utils/db');
 
 setUp();
 
-describe('wrapper', () => {
+describe('middleware group', () => {
 
   let position, stage, middlewares;
   beforeEach(() => {

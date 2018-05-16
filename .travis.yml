@@ -7,7 +7,7 @@ addons:
 services:
   - postgresql
 before_script:
-  - psql -U travis -c 'create database "orm-query-builder";'
+  - psql -c 'create database "orm-query-builder";' -U postgres
   - npm run migrate
 after_success:
   - npm run test:coveralls

@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "ORM query builder to facilitate pagination, filters and sorting.",
   "main": "index.js",
-  "directories": {
-    "lib": "lib"
-  },
   "scripts": {
     "doctoc": "doctoc --notitle --github README.md",
     "migrate": "cross-env NODE_ENV=test knex migrate:rollback && cross-env NODE_ENV=test knex migrate:latest",
@@ -14,12 +11,32 @@
     "test:debug": "cross-env DEBUG=orm-query-builder npm test",
     "test:watch": "onchange \"index.js\" \"lib/**/*.js\" \"spec/**/*.js\" -- npm test"
   },
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MediaComem/orm-query-builder.git"
+  },
   "keywords": [
     "orm",
     "query-builder"
   ],
-  "author": "Simon Oulevay <npm@alphahydrae.com> (Alpha Hydrae)",
+  "author": "Media Engineering Institute <mei@heig-vd.ch> (mei.heig-vd.ch)",
+  "contributors": [
+    "Simon Oulevay <npm@alphahydrae.com>"
+  ],
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MediaComem/orm-query-builder/issues"
+  },
+  "homepage": "https://github.com/MediaComem/orm-query-builder#readme",
+  "files": [
+    "index.js",
+    "lib",
+    "LICENSE.txt",
+    "README.md"
+  ],
   "dependencies": {
     "inflection": "^1.12.0",
     "lodash": "^4.17.10"

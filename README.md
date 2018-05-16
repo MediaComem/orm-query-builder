@@ -20,6 +20,22 @@ Developed at the [Media Engineering Institute](http://mei.heig-vd.ch) ([HEIG-VD]
 - [Installation](#installation)
   - [Requirements](#requirements)
 - [Usage](#usage)
+- [Concepts](#concepts)
+  - [Stages & query middleware](#stages--query-middleware)
+  - [Result](#result)
+  - [Plugins](#plugins)
+  - [Adapters](#adapters)
+- [Provided plugins](#provided-plugins)
+  - [Pagination](#pagination)
+    - [Options](#options)
+  - [Sorting](#sorting)
+    - [Methods](#methods)
+    - [Options](#options-1)
+    - [Execution options](#execution-options)
+  - [Eager loading](#eager-loading)
+    - [Methods](#methods-1)
+  - [Joining](#joining)
+    - [Methods](#methods-2)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -574,6 +590,8 @@ See the [Bookshelf adapter](lib/adapters/bookshelf.js) for a full example.
 
 These plugins are provided out of the box with ORM Query Builder, but you don't have to use them.
 
+---
+
 
 
 ### Pagination
@@ -656,6 +674,8 @@ console.log(context.get('pagination'));
 
   By default, the pagination plugin returns the `maxLimit` property of the context's options, or
   250.
+
+---
 
 
 
@@ -763,6 +783,8 @@ The **`sort`** option is expected to have one of the following formats:
 A single sort parameter can also be specified, e.g. just `"foo"`. It will automatically be wrapped
 into an array.
 
+---
+
 
 
 ### Eager loading
@@ -804,6 +826,8 @@ adapter. You can load relations all the time or conditionally.
 * **`loadWhen(predicate, relations, options)`** - Defines a relation (or relations) to be
   eager-loaded only if the specified predicate matches. The predicate will be called with the
   context after the `end` stage to determine whether to load the relations.
+
+---
 
 
 

@@ -38,6 +38,8 @@ npm install orm-query-builder
 
 
 
+
+
 ## Usage
 
 **TL;DR**
@@ -286,6 +288,8 @@ app.listen(process.env.PORT || 3000);
 
 
 
+
+
 ## Concepts
 
 The goal of ORM Query Builder is to help manage a typical database query in a complex application,
@@ -309,6 +313,8 @@ the offset and limit are applied for pagination. The correct table joins must be
 filters and sorting criteria, and you don't want to make the same join twice. Etc.
 
 The goal of ORM Query Builder is to facilitate this process.
+
+
 
 ### Stages & query middleware
 
@@ -426,6 +432,8 @@ builder.execute();
 // Hello Bob
 ```
 
+
+
 ### Result
 
 A query builder's `execute()` method returns the result of the query by default:
@@ -443,6 +451,8 @@ builder.execute({ result: 'context' }).then(context => {
   console.log(context.get('foo'));     // "bar"
 });
 ```
+
+
 
 ### Plugins
 
@@ -477,6 +487,8 @@ builder.execute().then(result => console.log(`Found ${result.length} people`));
 ```
 
 Plugins can be used to encapsulate complex functionality like pagination.
+
+
 
 ### Adapters
 
@@ -538,7 +550,13 @@ See the [Bookshelf adapter](lib/adapters/bookshelf.js) for a full example.
 
 
 
+
+
 ## Provided plugins
+
+These plugins are provided out of the box with ORM Query Builder, but you don't have to use them.
+
+
 
 ### Pagination
 
@@ -620,6 +638,8 @@ console.log(context.get('pagination'));
 
   By default, the pagination plugin returns the `maxLimit` property of the context's options, or
   250.
+
+
 
 ### Sorting
 
@@ -724,6 +744,140 @@ The **`sort`** option is expected to have one of the following formats:
 
 A single sort parameter can also be specified, e.g. just `"foo"`. It will automatically be wrapped
 into an array.
+
+
+
+### Eager loading
+
+**Requirements:** an adapter that supports `eagerLoad`.
+
+```js
+const { eagerLoading, OrmQueryBuilder } = require('orm-query-builder');
+
+const builder = new OrmQueryBuilder();
+builder.use(
+  eagerLoading()
+    // Always load this relation.
+    .load('address')
+    // Only load this relation if the context's "include" option indicates it.
+    .loadWhen(context => context.options.include.indexOf('socialAccounts') >= 0, 'socialAccounts')
+);
+```
+
+The eager loading plugin dynamically eager-loads your model's relations after the `end` stage (once
+the query has been executed), based on the execution context's options. It is also a middleware that
+you can apply at another stage if you wish:
+
+```js
+const { eagerLoading, OrmQueryBuilder } = require('orm-query-builder');
+
+const builder = new OrmQueryBuilder();
+builder.after('myStage', eagerLoading().load('address'));
+```
+
+This depends on your ODM/ORM's ability to eager-load your model's relations, as implemented in the
+adapter. You can load relations all the time or conditionally.
+
+#### Methods
+
+* **`load(relations, options)`** - Defines a relation (or relations) to be eager-loaded after the
+  query has been executed. The adapter's `eagerLoad(result, relations, options, context)` method
+  will be called with the arguments as is, after the `end` stage.
+* **`loadWhen(predicate, relations, options)`** - Defines a relation (or relations) to be
+  eager-loaded only if the specified predicate matches. The predicate will be called with the
+  context after the `end` stage to determine whether to load the relations.
+
+
+
+### Joining
+
+**Requirements:** an adapter that supports `getTableName`, `getJoinDefinitions` and
+`applyJoinDefinition`.
+
+```js
+const { joining, OrmQueryBuilder } = require('orm-query-builder');
+
+const builder = new OrmQueryBuilder();
+builder.use(
+  // Define the base table.
+  joining('people')
+    // Define a join between "people" and the "books_people" many-to-many join table.
+    .join('books_people', {
+      column: 'people.id',
+      joinColumn: 'books_people.person_id'
+    })
+    // Define a join between "books_people" and "books".
+    .join('books', {
+      column: 'books_people.book_id',
+      joinColumn: 'books.id',
+      requiredJoin: 'books_people' // It requires the previous join.
+    })
+);
+
+// Specify which joins you require in query middleware (in this example, for a filter).
+builder.before('end', context => {
+  const currentQuery = context.get('query');
+  context.requireJoin('books'); // Require a join (and dependent joins).
+  context.set('query', currentQuery.where('books.title', 'A Tale of Two Cities'));
+});
+
+builder.before('end', context => {
+  console.log(context.get('query').query().toString());
+});
+
+builder.execute().then(() => console.log('done'));
+
+// OUTPUT:
+// select * from people
+//   inner join books_people on people.id = books_people.person_id
+//   inner join books on books_people.book_id = books.id
+//   where books.title = 'A Tale of Two Cities'
+// done
+```
+
+If your ORM allows you to easily define basic relations (i.e. many to one, one to many, many to
+many), and the adapter supports `getJoinDefinitions` and `applyJoinDefinition`, you may not have to
+define the joins manually:
+
+```js
+const { joining, OrmQueryBuilder } = require('orm-query-builder');
+
+// A Bookshelf domain model with the same many-to-many relationship.
+const Book = bookshelf.model('Book', {});
+const Person = bookshelf.model('Person', {
+  books: function() {
+    return this.belongsToMany('Book');
+  }
+});
+
+const builder = new OrmQueryBuilder();
+builder.use(
+  // Have the adapter deduce the available joins from the relation.
+  joining(Person).relation('books')
+);
+
+// The behavior would be the same as the previous example.
+```
+
+The joining plugin allows you to define what table joins are available for your query and the
+dependency between those joins.
+
+It also adds a `requireJoin(name)` method to the execution context, which allows you to individually
+require a specific join for a filter or sorting criteria. The plugin will automatically apply all
+the required joins when needed, and avoid applying any of them twice.
+
+#### Methods
+
+* **`join(name, options)`** - Defines an available join. The join options are:
+  * `joinType` - The type of join (`innerJoin`, `leftOuterJoin`, `rightOuterJoin`, `fullOuterJoin`,
+    `crossJoin`), defaults to `innerJoin`.
+  * `joinTable` - The join table (if different than the join name).
+  * `column` - The join column in the source table.
+  * `joinColumn` - The join column in the target table.
+  * `requiredJoin` - Another join that must be applied for this join to be valid.
+  * `requiredJoins` - Multiple other joins that must be applied in order for this join to be valid.
+* **`relation(name, options)`** - Adds join definitions based on the model's relation.
+* **`relations(...names)`** - Adds join definitions based on multiple model relations.
 
 
 

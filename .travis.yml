@@ -4,6 +4,8 @@ node_js:
   - "10"
 addons:
   postgresql: 10
+dist: trusty
+sudo: false
 services:
   - postgresql
 before_script:

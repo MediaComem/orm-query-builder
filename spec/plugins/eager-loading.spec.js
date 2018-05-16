@@ -26,8 +26,8 @@ describe('eager loading plugin', () => {
       { title: 'Filtering', theme_id: theme.get('id') }
     );
 
-    people[0].books().attach(books.slice(0, 1));
-    people[1].books().attach(books.slice());
+    await people[0].books().attach(books.slice(0, 1));
+    await people[1].books().attach(books.slice());
 
     const baseQuery = new Person().orderBy('last_name').orderBy('first_name');
     const result = await new OrmQueryBuilder({ baseQuery })
@@ -69,8 +69,8 @@ describe('eager loading plugin', () => {
       { title: 'Filtering', theme_id: theme.get('id') }
     );
 
-    people[0].books().attach(books.slice(0, 1));
-    people[1].books().attach(books.slice());
+    await people[0].books().attach(books.slice(0, 1));
+    await people[1].books().attach(books.slice());
 
     const baseQuery = new Person().orderBy('last_name').orderBy('first_name');
     const result = await new OrmQueryBuilder({ baseQuery, include: [ 'books' ] })

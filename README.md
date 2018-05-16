@@ -1,7 +1,7 @@
 # ORM Query Builder
 
 An extensible wrapper around Object Document Mappers (ODMs) or Object Relational Mappers (ORMs) to
-facilitate using filters, pagination and sorting when making database queries.
+facilitate making complex database queries with filters, pagination and sorting.
 
 [Bookshelf][bookshelf] is supported out of the box, but you should be able to use any ODM/ORM by
 providing an adapter that implements basic operations on its queries.
@@ -42,9 +42,24 @@ npm install orm-query-builder
 
 ## Usage
 
-**TL;DR**
+ORM Query Builder is basically a wrapper around your database queries:
 
 ```js
+const { OrmQueryBuilder } = require('orm-query-builder');
+
+const builder = new OrmQueryBuilder({ baseQuery: myQuery });
+builder.execute().then(result => {
+  // "result" is what you would get by executing "myQuery",
+  // which is a query object from your ODM/ORM.
+});
+```
+
+**TL;DR** features:
+
+```js
+// Require ORM Query Builder and plugins.
+const { eagerLoading, joining, OrmQueryBuilder, pagination, sorting } = require('orm-query-builder');
+
 // Bookshelf domain model.
 const Address = bookshelf.model('Address', {});
 const Person = bookshelf.model('Person', {
@@ -112,7 +127,7 @@ app.get('/people', (req, res, next) => {
 app.listen(process.env.PORT || 3000);
 ```
 
-A more detailed explanation of this example:
+A more detailed explanation of the above example:
 
 ```js
 const Bookshelf = require('bookshelf');
@@ -498,7 +513,7 @@ queries.
 
 An adapter **must** implement the following functions:
 
-* `createQuery` - Create a query from an execution context.
+* `createQuery` - Creates a query from an execution context.
 
   The execution context has an `options` property which contains the options passed to the builder
   at construction, merged with the options passed to its `execute` method. A barebones
@@ -509,7 +524,10 @@ An adapter **must** implement the following functions:
     return context.options.baseQuery;
   }
   ```
-* `executeQuery` - Execute a query.
+
+  A query may be anything: a Bookshelf model, a plain object, etc. ORM Query Builder only ever
+  manipulates it through the adapter.
+* `executeQuery` - Executes a query.
 
   ORM Query Builder doesn't know how to execute your ODM/ORM's queries, so you have to do it. This
   is an example of how to execute a Bookshelf query:
@@ -519,7 +537,7 @@ An adapter **must** implement the following functions:
     return query.fetchAll();
   }
   ```
-* `executeCountQuery` - Execute the current query as a count.
+* `executeCountQuery` - Executes a count query based on the current query.
 
   ORM Query Builder doesn't know how to count either. This is an example of how to do it with
   Bookshelf:

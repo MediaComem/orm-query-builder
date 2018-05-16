@@ -91,7 +91,7 @@ describe('sorting plugin', () => {
 
     function createBuilder(options = {}, enrichPlugin = identity) {
       return new OrmQueryBuilder({ baseQuery: Person })
-        .use(enrichPlugin(sorting(options).sorts('lastName', 'firstName')));
+        .use(enrichPlugin(sorting(options).sorts('last_name', 'first_name')));
     }
 
     function expectResult(result, ...personIndices) {
@@ -102,48 +102,48 @@ describe('sorting plugin', () => {
 
     it('should sort by a single criterion', async () => {
       const builder = createBuilder();
-      const result = await builder.execute({ sort: 'firstName' });
+      const result = await builder.execute({ sort: 'first_name' });
       expectResult(result, 2, 1, 0);
     });
 
     it('should sort by a single criterion in descending order', async () => {
       const builder = createBuilder();
-      const result = await builder.execute({ sort: 'firstName-desc' });
+      const result = await builder.execute({ sort: 'first_name-desc' });
       expectResult(result, 0, 1, 2);
     });
 
     it('should sort by multiple criteria', async () => {
       const builder = createBuilder();
-      const result = await builder.execute({ sort: [ 'lastName', 'firstName' ] });
+      const result = await builder.execute({ sort: [ 'last_name', 'first_name' ] });
       expectResult(result, 1, 0, 2);
     });
 
     it('should sort by multiple criteria in descending order', async () => {
       const builder = createBuilder();
-      const result = await builder.execute({ sort: [ 'lastName-desc', 'firstName' ] });
+      const result = await builder.execute({ sort: [ 'last_name-desc', 'first_name' ] });
       expectResult(result, 2, 1, 0);
     });
 
     it('should apply the default sort', async () => {
-      const builder = createBuilder(undefined, plugin => plugin.default('lastName-desc', 'firstName-desc'));
+      const builder = createBuilder(undefined, plugin => plugin.default('last_name-desc', 'first_name-desc'));
       const result = await builder.execute();
       expectResult(result, 2, 0, 1);
     });
 
     it('should complete the sorting criteria with the default sort', async () => {
-      const builder = createBuilder(undefined, plugin => plugin.default('lastName-desc', 'firstName-desc'));
-      const result = await builder.execute({ sort: 'lastName-asc' });
+      const builder = createBuilder(undefined, plugin => plugin.default('last_name-desc', 'first_name-desc'));
+      const result = await builder.execute({ sort: 'last_name-asc' });
       expectResult(result, 0, 1, 2);
     });
 
     it('should not apply the default sort if all sorts are already defined', async () => {
-      const builder = createBuilder(undefined, plugin => plugin.default('lastName-desc', 'firstName-desc'));
-      const result = await builder.execute({ sort: [ 'lastName-asc', 'firstName-asc' ] });
+      const builder = createBuilder(undefined, plugin => plugin.default('last_name-desc', 'first_name-desc'));
+      const result = await builder.execute({ sort: [ 'last_name-asc', 'first_name-asc' ] });
       expectResult(result, 1, 0, 2);
     });
 
     it('should extract the sort parameters from a custom option', async () => {
-      const req = { query: { sort: 'firstName' } };
+      const req = { query: { sort: 'first_name' } };
       const builder = createBuilder({ getSort: 'options.req.query.sort' });
       const result = await builder.execute({ req });
       expectResult(result, 2, 1, 0);
